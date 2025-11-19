@@ -1,6 +1,7 @@
 # Text to Markdown Exporter
 
 Extensão do Chrome para exportar texto para formato Markdown.
+
 <img width="387" height="359" alt="Screenshot 2025-11-19 at 14 36 32" src="https://github.com/user-attachments/assets/aea047a7-ca2a-4ac1-bb19-7a52f3ae1029" />
 
 ## Instalação
