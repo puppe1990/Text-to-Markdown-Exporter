@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const textInput = document.getElementById('textInput');
+  const filenameInput = document.getElementById('filenameInput');
+  const filenamePreview = document.getElementById('filenamePreview');
   const exportBtn = document.getElementById('exportBtn');
   const clearBtn = document.getElementById('clearBtn');
   const statusMessage = document.getElementById('statusMessage');
@@ -20,6 +22,22 @@ document.addEventListener('DOMContentLoaded', () => {
       .join('\n');
 
     return markdown;
+  }
+
+  // Função para gerar nome do arquivo
+  function generateFilename(customName = '') {
+    const timestamp = new Date().toISOString().slice(0, 10);
+    const baseName = customName.trim() || 'export';
+    // Remove caracteres inválidos para nome de arquivo
+    const sanitizedName = baseName.replace(/[<>:"/\\|?*]/g, '');
+    return `${sanitizedName}-${timestamp}.md`;
+  }
+
+  // Função para atualizar preview do nome do arquivo
+  function updateFilenamePreview() {
+    const customName = filenameInput.value.trim();
+    const preview = generateFilename(customName);
+    filenamePreview.textContent = preview;
   }
 
   // Função para baixar arquivo
@@ -58,8 +76,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     const markdown = textToMarkdown(text);
-    const timestamp = new Date().toISOString().slice(0, 10);
-    const filename = `export-${timestamp}.md`;
+    const customName = filenameInput.value.trim();
+    const filename = generateFilename(customName);
 
     downloadMarkdown(markdown, filename);
     showStatus('Arquivo Markdown exportado com sucesso!', true);
@@ -68,9 +86,17 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event listener para limpar
   clearBtn.addEventListener('click', () => {
     textInput.value = '';
+    filenameInput.value = '';
+    updateFilenamePreview();
     textInput.focus();
     showStatus('Campo limpo.', true);
   });
+
+  // Event listener para atualizar preview do nome do arquivo
+  filenameInput.addEventListener('input', updateFilenamePreview);
+
+  // Inicializar preview do nome do arquivo
+  updateFilenamePreview();
 
   // Focar no textarea ao abrir o popup
   textInput.focus();
