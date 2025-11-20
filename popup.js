@@ -40,6 +40,32 @@ document.addEventListener('DOMContentLoaded', () => {
     filenamePreview.textContent = preview;
   }
 
+  // Funções para salvar e carregar do localStorage
+  function saveToStorage() {
+    localStorage.setItem('textExport_text', textInput.value);
+    localStorage.setItem('textExport_filename', filenameInput.value);
+  }
+
+  function loadFromStorage() {
+    const savedText = localStorage.getItem('textExport_text');
+    const savedFilename = localStorage.getItem('textExport_filename');
+    
+    if (savedText !== null) {
+      textInput.value = savedText;
+    }
+    
+    if (savedFilename !== null) {
+      filenameInput.value = savedFilename;
+    }
+    
+    updateFilenamePreview();
+  }
+
+  function clearStorage() {
+    localStorage.removeItem('textExport_text');
+    localStorage.removeItem('textExport_filename');
+  }
+
   // Função para baixar arquivo
   function downloadMarkdown(content, filename = 'export.md') {
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
@@ -81,22 +107,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     downloadMarkdown(markdown, filename);
     showStatus('Arquivo Markdown exportado com sucesso!', true);
+    
+    // Limpar dados após salvar com sucesso
+    clearStorage();
+    textInput.value = '';
+    filenameInput.value = '';
+    updateFilenamePreview();
   });
 
   // Event listener para limpar
   clearBtn.addEventListener('click', () => {
     textInput.value = '';
     filenameInput.value = '';
+    clearStorage();
     updateFilenamePreview();
     textInput.focus();
     showStatus('Campo limpo.', true);
   });
 
-  // Event listener para atualizar preview do nome do arquivo
-  filenameInput.addEventListener('input', updateFilenamePreview);
+  // Event listeners para salvar automaticamente
+  textInput.addEventListener('input', saveToStorage);
+  filenameInput.addEventListener('input', () => {
+    updateFilenamePreview();
+    saveToStorage();
+  });
 
-  // Inicializar preview do nome do arquivo
-  updateFilenamePreview();
+  // Carregar dados salvos ao abrir o popup
+  loadFromStorage();
 
   // Focar no textarea ao abrir o popup
   textInput.focus();
