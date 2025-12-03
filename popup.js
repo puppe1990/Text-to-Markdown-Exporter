@@ -1,27 +1,39 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const textInput = document.getElementById('textInput');
   const filenameInput = document.getElementById('filenameInput');
   const filenamePreview = document.getElementById('filenamePreview');
   const exportBtn = document.getElementById('exportBtn');
   const clearBtn = document.getElementById('clearBtn');
   const statusMessage = document.getElementById('statusMessage');
 
-  // Função para converter texto para markdown
-  function textToMarkdown(text) {
-    if (!text || text.trim() === '') {
+  // Inicializar Quill editor
+  const quill = new Quill('#textInput', {
+    theme: 'snow',
+    placeholder: 'Cole ou digite o texto que deseja exportar...',
+    modules: {
+      toolbar: [
+        [{ 'header': [1, 2, 3, false] }],
+        ['bold', 'italic', 'underline', 'strike'],
+        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+        ['blockquote', 'code-block'],
+        ['link'],
+        [{ 'color': [] }, { 'background': [] }],
+        ['clean']
+      ]
+    }
+  });
+
+  // Inicializar Turndown para converter HTML para Markdown
+  const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced'
+  });
+
+  // Função para converter HTML do Quill para markdown
+  function htmlToMarkdown(html) {
+    if (!html || html.trim() === '' || html === '<p><br></p>') {
       return '';
     }
-
-    // Preserva quebras de linha e converte para markdown
-    let markdown = text
-      // Converte múltiplas quebras de linha em parágrafos
-      .replace(/\n{3,}/g, '\n\n')
-      // Preserva quebras de linha simples
-      .split('\n')
-      .map(line => line.trim() === '' ? '' : line)
-      .join('\n');
-
-    return markdown;
+    return turndownService.turndown(html);
   }
 
   // Função para gerar nome do arquivo
@@ -42,7 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Funções para salvar e carregar do localStorage
   function saveToStorage() {
-    localStorage.setItem('textExport_text', textInput.value);
+    const html = quill.root.innerHTML;
+    localStorage.setItem('textExport_text', html);
     localStorage.setItem('textExport_filename', filenameInput.value);
   }
 
@@ -51,7 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const savedFilename = localStorage.getItem('textExport_filename');
     
     if (savedText !== null) {
-      textInput.value = savedText;
+      quill.root.innerHTML = savedText;
     }
     
     if (savedFilename !== null) {
@@ -94,14 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event listener para exportar
   exportBtn.addEventListener('click', () => {
-    const text = textInput.value;
+    const html = quill.root.innerHTML;
+    const text = quill.getText();
 
-    if (!text || text.trim() === '') {
+    if (!text || text.trim() === '' || html === '<p><br></p>') {
       showStatus('Por favor, cole ou digite algum texto antes de exportar.', false);
       return;
     }
 
-    const markdown = textToMarkdown(text);
+    const markdown = htmlToMarkdown(html);
     const customName = filenameInput.value.trim();
     const filename = generateFilename(customName);
 
@@ -110,23 +124,23 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Limpar dados após salvar com sucesso
     clearStorage();
-    textInput.value = '';
+    quill.setContents([]);
     filenameInput.value = '';
     updateFilenamePreview();
   });
 
   // Event listener para limpar
   clearBtn.addEventListener('click', () => {
-    textInput.value = '';
+    quill.setContents([]);
     filenameInput.value = '';
     clearStorage();
     updateFilenamePreview();
-    textInput.focus();
+    quill.focus();
     showStatus('Campo limpo.', true);
   });
 
   // Event listeners para salvar automaticamente
-  textInput.addEventListener('input', saveToStorage);
+  quill.on('text-change', saveToStorage);
   filenameInput.addEventListener('input', () => {
     updateFilenamePreview();
     saveToStorage();
@@ -135,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Carregar dados salvos ao abrir o popup
   loadFromStorage();
 
-  // Focar no textarea ao abrir o popup
-  textInput.focus();
+  // Focar no editor ao abrir o popup
+  quill.focus();
 });
 

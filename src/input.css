@@ -2,3 +2,29 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilos customizados para o Quill editor */
+#textInput .ql-container {
+  border-bottom-left-radius: 0.5rem;
+  border-bottom-right-radius: 0.5rem;
+  border: 1px solid rgb(209 213 219);
+  font-size: 0.875rem;
+}
+
+#textInput .ql-toolbar {
+  border-top-left-radius: 0.5rem;
+  border-top-right-radius: 0.5rem;
+  border: 1px solid rgb(209 213 219);
+  border-bottom: none;
+}
+
+#textInput .ql-editor {
+  min-height: 150px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+#textInput .ql-editor.ql-blank::before {
+  color: rgb(156 163 175);
+  font-style: normal;
+}
+
