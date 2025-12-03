@@ -52,8 +52,12 @@ document.addEventListener('DOMContentLoaded', () => {
     filenamePreview.textContent = preview;
   }
 
+  // Flag para prevenir salvamento durante limpeza
+  let isClearing = false;
+
   // Funções para salvar e carregar do localStorage
   function saveToStorage() {
+    if (isClearing) return; // Não salvar durante a limpeza
     const html = quill.root.innerHTML;
     localStorage.setItem('textExport_text', html);
     localStorage.setItem('textExport_filename', filenameInput.value);
@@ -123,18 +127,22 @@ document.addEventListener('DOMContentLoaded', () => {
     showStatus('Arquivo Markdown exportado com sucesso!', true);
     
     // Limpar dados após salvar com sucesso
+    isClearing = true; // Prevenir salvamento durante limpeza
     clearStorage();
-    quill.setContents([]);
     filenameInput.value = '';
+    quill.setContents([]);
     updateFilenamePreview();
+    isClearing = false; // Reativar salvamento
   });
 
   // Event listener para limpar
   clearBtn.addEventListener('click', () => {
+    isClearing = true; // Prevenir salvamento durante limpeza
     quill.setContents([]);
     filenameInput.value = '';
     clearStorage();
     updateFilenamePreview();
+    isClearing = false; // Reativar salvamento
     quill.focus();
     showStatus('Campo limpo.', true);
   });
